@@ -22,7 +22,9 @@ jobs:
        cd frontend
        npm install
        npm run build
+       pwd
        cd ..
+       pwd
        ls
       
     - name: Setup AWS CLI
