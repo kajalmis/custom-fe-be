@@ -1,9 +1,7 @@
 name: Frontend CI/CD
 
 on:
-  push:
-    branches:
-      - frontend
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
