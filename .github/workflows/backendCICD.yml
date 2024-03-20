@@ -2,6 +2,8 @@ name: Backend CI/CD
 
 on:
   push:
+    branches:
+      - main
 
 jobs:
   build-and-deploy:
@@ -11,31 +13,20 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
       
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v1
+      
+    - name: Login to Amazon ECR
+      run: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 332931378908.dkr.ecr.us-east-1.amazonaws.com
+      
     - name: Build Docker image
-      run: | 
-        cd backend
-        docker build -t backend .
+      run: docker build -t backend .
       
-    - name: Save Docker image as tar
-      run: docker save -o backend_image.tar backend:latest
+    - name: Tag Docker image
+      run: docker tag backend:latest 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
       
-    - name: Copy Docker image to EC2 instance
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_PRIVATE_KEY }}
-        source: ./backend_image.tar
-        target: /home/ubuntu/backend_image.tar
+    - name: Push Docker image to Amazon ECR
+      run: docker push 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
       
-    - name: SSH into EC2 instance
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_PRIVATE_KEY }}
-        script: |
-          docker load -i /home/ubuntu/backend_image.tar
-          docker stop backend-container || true
-          docker rm backend-container || true
-          docker run -d --name backend-container -p 5000:5000 backend:latest
+    - name: Update ECS Service
+      run: aws ecs update-service --cluster KAJAL-ECS-CLUSTER --service KAJAL-ECS-SERVICE --force-new-deployment --region us-east-1
