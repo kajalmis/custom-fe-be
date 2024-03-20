@@ -22,9 +22,7 @@ jobs:
        cd frontend
        npm install
        npm run build
-       ls
-       cd build
-       ls
+       cd ..
       
     - name: Setup AWS CLI
       uses: aws-actions/configure-aws-credentials@v1
@@ -35,4 +33,4 @@ jobs:
         
     - name: Deploy to S3
       run: |
-        aws s3 sync build s3://imaginekajal
+        aws s3 sync frontend/build/ s3://imaginekajal
