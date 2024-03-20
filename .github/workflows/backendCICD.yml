@@ -17,9 +17,7 @@ jobs:
         docker build -t backend .
       
     - name: Save Docker image as tar
-      run: |
-        cd 
-        docker save -o backend_image.tar backend:latest
+      run: docker save -o backend_image.tar backend:latest
       
     - name: Copy Docker image to EC2 instance
       uses: appleboy/scp-action@master
