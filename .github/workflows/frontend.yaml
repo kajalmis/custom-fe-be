@@ -23,9 +23,7 @@ jobs:
        npm install
        npm run build
        ls
-       pwd
-       cd ..
-       pwd
+       cd build
        ls
       
     - name: Setup AWS CLI
