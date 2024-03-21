@@ -42,7 +42,7 @@ jobs:
           host: 3.93.148.81    
           username: ubuntu
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script: |
+          run: |
             sudo docker stop $(docker ps -q)
             sudo docker container prune -f
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 332931378908.dkr.ecr.us-east-1.amazonaws.com
