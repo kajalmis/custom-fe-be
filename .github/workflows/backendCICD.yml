@@ -1,40 +1,46 @@
-name: Backend CI/CD
+name: Build and Deploy
 
 on:
   push:
-    
+    branches:
+      - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
       - name: Build Docker image
         run: |
           cd backend
-          echo ${{ secrets.DOCKER_PASSWORD }} | sudo docker login -umiskajal06541 --password-stdin
-          sudo docker build -t miskajal06541/backend:latest .
-          sudo docker images
+          docker build -t 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest .
+	           
+      - name: Login to Amazon ECR
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set default.region us-east-1
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 332931378908.dkr.ecr.us-east-1.amazonaws.com
 
-  deploy:
-    runs-on: ubuntu-latest
+      - name: Push Docker image to ECR
+        run: docker push 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Deploy to EC2
+      - name: SSH into EC2 instance and run container
         uses: appleboy/ssh-action@master
         with:
-          host: 3.84.61.52    
+          host: 3.93.148.81    
           username: ubuntu
           key: ${{ secrets.EC2_PRIVATE_KEY }}
+          port: ${{ secrets.EC2_PORT }}
           script: |
-            sudo docker stop backend-container || true
-            sudo docker rm backend-container || true
-            echo ${{ secrets.DOCKER_PASSWORD }} | sudo docker login -u miskajal06541 --password-stdin
-            sudo docker pull miskajal06541/backend:latest
-            sudo docker run -d --name backend-container -p 5000:5000 miskajal06541/backend:latest
+            sudo docker stop backend-container
+            sudo docker rm backend-container
+            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 332931378908.dkr.ecr.us-east-1.amazonaws.com
+            sudo docker pull 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
+            sudo docker run -d --name backend-container -p 5000:5000 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
