@@ -1,11 +1,11 @@
-name: Build and Deploy
+name: frontend Build and Deploy
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'custom-fe-be/frontend/**'
+      - 'frontend/**'
 
 jobs:
   build-and-deploy:
