@@ -1,7 +1,11 @@
-name: Frontend CI/CD
+name: Build and Deploy
 
 on:
   push:
+    branches:
+      - main
+    paths:
+      - 'custom-fe-be/frontend/**'
 
 jobs:
   build-and-deploy:
