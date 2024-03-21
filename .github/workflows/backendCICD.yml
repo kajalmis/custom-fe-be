@@ -1,4 +1,4 @@
-name: Backend CI/CD
+name: CI/CD Pipeline
 
 on:
   push:
@@ -8,32 +8,39 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      
-    - name: Setup Docker Buildx
-      uses: docker/setup-buildx-action@v1
-    - name: Build Docker image
-      run: |
-        cd backend
-        docker build -t backend-1 .
-    - name: Login to Amazon ECR
-      run: |
-        echo "${{ secrets.AWS_ACCESS_KEY_ID }}" >> aws_access_key_id
-        echo "${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> aws_secret_access_key
-        aws configure set aws_access_key_id "$(cat aws_access_key_id)"
-        aws configure set aws_secret_access_key "$(cat aws_secret_access_key)"
-        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 332931378908.dkr.ecr.us-east-1.amazonaws.com
-      
-    
-      
-    - name: Tag Docker image
-      run: docker tag backend-1:latest 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
-      
-    - name: Push Docker image to Amazon ECR
-      run: docker push 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
-      
-    - name: Update ECS Service
-      run: aws ecs update-service --cluster KAJAL-ECS-CLUSTER --service KAJAL-ECS-SERVICE --force-new-deployment --region us-east-1
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Login to Amazon ECR
+        run: |
+          echo "${{ secrets.AWS_ACCESS_KEY_ID }}" >> aws_access_key_id
+          echo "${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> aws_secret_access_key
+          aws configure set aws_access_key_id "$(cat aws_access_key_id)"
+          aws configure set aws_secret_access_key "$(cat aws_secret_access_key)"
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 332931378908.dkr.ecr.us-east-1.amazonaws.com
+
+
+      - name: Build Docker image
+        run: |
+          cd backend
+          docker build -t backend-image .
+
+      - name: Tag Docker image
+        run: docker tag backend-1:latest 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
+
+
+      - name: Push Docker image to Amazon ECR
+        run: docker push 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
+
+      - name: SSH into EC2 instance and update Docker image
+        uses: appleboy/ssh-action@master
+        with:
+          host: 18.212.186.118
+          username: ubuntu
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            sudo docker stop backend-container
+            sudo docker rm backend-container
+            sudo docker pull 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
+            sudo docker run -d --name backend-container -p 5000:5000 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
