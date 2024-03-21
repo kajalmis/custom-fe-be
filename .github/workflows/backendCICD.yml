@@ -30,7 +30,7 @@ jobs:
     
       
     - name: Tag Docker image
-      run: docker tag backend:latest1 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
+      run: docker tag backend-1:latest1 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
       
     - name: Push Docker image to Amazon ECR
       run: docker push 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
