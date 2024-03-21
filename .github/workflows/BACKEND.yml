@@ -46,5 +46,5 @@ jobs:
             sudo docker stop $(docker ps -q)
             sudo docker container prune -f
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 332931378908.dkr.ecr.us-east-1.amazonaws.com
-            sudo docker pull 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
-            sudo docker run -d --name backend-container -p 5000:5000 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
+            docker pull 332931378908.dkr.ecr.us-east-1.amazonaws.com/backends:latest
+            docker run -d -p 5000:5000 332931378908.dkr.ecr.us-east-1.amazonaws.com/backends:latest
