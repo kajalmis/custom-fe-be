@@ -23,13 +23,19 @@ jobs:
       - name: Build Docker image
         run: |
           cd backend
-          docker build -t backend-kajal .
+          # Generating a unique tag based on commit hash
+          TAG=$(echo "${GITHUB_SHA::8}") # Take first 8 characters of the commit hash
+          docker build -t backend-kajal:${TAG} .
           
       - name: Tag Docker image
-        run: docker tag backend-kajal:latest 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
+        run: |
+          TAG=$(echo "${GITHUB_SHA::8}")
+          docker tag backend-kajal:${TAG} 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:${TAG}
           
       - name: Push Docker image to Amazon ECR
-        run: docker push 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
+        run: |
+          TAG=$(echo "${GITHUB_SHA::8}")
+          docker push 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:${TAG}
           
       - name: SSH into EC2 instance and update Docker image
         uses: appleboy/ssh-action@master
@@ -40,10 +46,9 @@ jobs:
           script: |
             sudo docker stop backend-container
             sudo docker rm backend-container
-            sudo docker rmi 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
             aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
             aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             aws configure set default.region us-east-1
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 332931378908.dkr.ecr.us-east-1.amazonaws.com
-            sudo docker pull 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
-            sudo docker run -d --name backend-container -p 5000:5000 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
+            sudo docker pull 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:${TAG}
+            sudo docker run -d --name backend-container -p 5000:5000 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:${TAG}
