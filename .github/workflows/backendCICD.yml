@@ -46,9 +46,12 @@ jobs:
           script: |
             sudo docker stop backend-container
             sudo docker rm backend-container
+            TAG=$(echo "${GITHUB_SHA::8}") # Generate a unique tag based on commit hash
+            sudo docker rmi 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:${TAG} # Ensure proper syntax for the image reference
             aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
             aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             aws configure set default.region us-east-1
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 332931378908.dkr.ecr.us-east-1.amazonaws.com
             sudo docker pull 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:${TAG}
             sudo docker run -d --name backend-container -p 5000:5000 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:${TAG}
+
