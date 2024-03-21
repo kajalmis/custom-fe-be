@@ -38,5 +38,4 @@ jobs:
 
     - name: Set ACL to public-read
       run: |
-        cd
-        aws s3 cp --recursive --acl public-read s3://imaginekajal/ frontend/build/
+        aws s3 cp --recursive --acl public-read ${GITHUB_WORKSPACE}/frontend/build/ s3://imaginekajal/
