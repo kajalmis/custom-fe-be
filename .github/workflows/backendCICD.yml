@@ -14,8 +14,8 @@ jobs:
 
       - name: Login to Amazon ECR-
         run: |
-          echo "${{ secrets.AWS_ACCESS_KEY_ID_ECR }}" >> aws_access_key_id
-          echo "${{ secrets.AWS_SECRET_ACCESS_KEY_ECR}}" >> aws_secret_access_key
+          echo "${{ secrets.AWS_ACCESS_KEY_ID }}" >> aws_access_key_id
+          echo "${{ secrets.AWS_SECRET_ACCESS_KEY}}" >> aws_secret_access_key
           aws configure set aws_access_key_id "$(cat aws_access_key_id)"
           aws configure set aws_secret_access_key "$(cat aws_secret_access_key)"
           aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 332931378908.dkr.ecr.us-east-1.amazonaws.com
