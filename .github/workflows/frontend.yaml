@@ -1,45 +1,40 @@
-name: Build and Deploy
+name: Frontend CI/CD
 
 on:
   push:
-    branches:
-      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+      
+      
+    - name: Build production artifacts
+      run: |
+       cd frontend
+       npm install
+       npm run build
+       ls
+       cd ..
+      
+    - name: Setup AWS CLI
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: 'us-east-1'
         
-      - name: Login to Amazon ECR
-        run: |
-          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws configure set default.region us-east-1
-          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 332931378908.dkr.ecr.us-east-1.amazonaws.com
-          
-      - name: Build Docker image
-        run: |
-          cd backend
-          docker build -t backend .
-          
-      - name: Tag Docker image
-        run: docker tag backend:latest 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
-          
-      - name: Push Docker image to Amazon ECR
-        run: docker push 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
-          
-      - name: SSH into EC2 instance and update Docker image
-        uses: appleboy/ssh-action@master
-        with:
-          host: 3.93.148.81    
-          username: ubuntu
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script: |
-            sudo docker stop backend-container
-            sudo docker rm backend-container
-            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 332931378908.dkr.ecr.us-east-1.amazonaws.com
-            sudo docker pull 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
-            sudo docker run -d --name backend-container -p 5000:5000 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
+    - name: Deploy to S3
+      run: |
+        aws s3 sync frontend/build/ s3://imaginekajal
+    - name: Set ACL to public-read
+      run: |
+        aws s3 cp --recursive --acl public-read ${GITHUB_WORKSPACE}/frontend/build/ s3://imaginekajal/
