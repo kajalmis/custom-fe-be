@@ -1,9 +1,8 @@
-name: CI/CD Pipeline
+name: backendCICD
 
 on:
   push:
-    branches:
-      - main
+    
 
 jobs:
   build-and-deploy:
@@ -27,7 +26,7 @@ jobs:
           docker build -t backend-image .
 
       - name: Tag Docker image
-        run: docker tag backend-1:latest 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
+        run: docker tag backend:latest 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
 
 
       - name: Push Docker image to Amazon ECR
