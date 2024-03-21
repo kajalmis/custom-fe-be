@@ -15,7 +15,8 @@ jobs:
       - name: Build Docker image
         run: |
           cd backend
-          sudo docker build -t backend:latest .
+          echo ${{ secrets.DOCKER_PASSWORD }} | sudo docker login -umiskajal06541 --password-stdin
+          sudo docker build -t miskajal06541/backend:latest .
           sudo docker images
 
   deploy:
@@ -34,6 +35,6 @@ jobs:
           script: |
             sudo docker stop backend-container || true
             sudo docker rm backend-container || true
-            sudo docker login -u miskajal06541 -p ${{ secrets.DOCKER_PASSWORD }}
-            sudo docker pull backend:latest
-            sudo docker run -d --name backend-container -p 5000:5000 backend:latest
+            echo ${{ secrets.DOCKER_PASSWORD }} | sudo docker login -u miskajal06541 --password-stdin
+            sudo docker pull miskajal06541/backend:latest
+            sudo docker run -d --name backend-container -p 5000:5000 miskajal06541/backend:latest
