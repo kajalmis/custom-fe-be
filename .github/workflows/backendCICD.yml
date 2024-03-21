@@ -20,16 +20,13 @@ jobs:
           aws configure set default.region us-east-1
           aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 332931378908.dkr.ecr.us-east-1.amazonaws.com
           
-      - name: Build Docker image
+      - name: Build and push Docker image to Amazon ECR
         run: |
           cd backend
-          docker build -t backend-kajal .
-          
-      - name: Tag Docker image
-        run: docker tag backend-kajal:latest 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
-          
-      - name: Push Docker image to Amazon ECR
-        run: docker push 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
+          TAG=$(echo "${GITHUB_SHA::8}") # Generate a unique tag based on commit hash
+          IMAGE="332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:${TAG}"
+          docker build -t $IMAGE .
+          docker push $IMAGE
           
       - name: SSH into EC2 instance and update Docker image
         uses: appleboy/ssh-action@master
@@ -38,12 +35,11 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            sudo docker stop $(docker ps -q)
-            sudo docker container prune -f
-            sudo docker rmi 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
+            sudo docker stop backend-container
+            sudo docker rm backend-container
             aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
             aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             aws configure set default.region us-east-1
-            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 332931378908.dkr.ecr.us-east-1.amazonaws.com
-            sudo docker pull 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
-            sudo docker run -d --name backend-container -p 5000:5000 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
+            sudo aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 332931378908.dkr.ecr.us-east-1.amazonaws.com
+            sudo docker pull $IMAGE
+            sudo docker run -d --name backend-container -p 5000:5000 $IMAGE
