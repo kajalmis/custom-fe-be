@@ -41,6 +41,7 @@ jobs:
           script: |
             sudo docker stop backend-container
             sudo docker rm backend-container
+            sudo docker rmi 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
             echo "${{ secrets.AWS_ACCESS_KEY_ID }}" >> aws_access_key_id
             echo "${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> aws_secret_access_key
             aws configure set aws_access_key_id "$(cat aws_access_key_id)"
