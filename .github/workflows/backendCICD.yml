@@ -23,7 +23,7 @@ jobs:
       - name: Build Docker image
         run: |
           cd backend
-          docker build -t backend-image .
+          docker build -t backend .
 
       - name: Tag Docker image
         run: docker tag backend:latest 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:latest
