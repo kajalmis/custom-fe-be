@@ -6,7 +6,7 @@ CORS(app)  # This will enable CORS for all routes
 
 @app.route('/')
 def index():
-    return 'Backend: You are viewing kajal the backend-Kajal.'
+    return 'Backend: Y ou are viewing kajal the backend-Kajal.'
  
 @app.route('/api/request', methods=['GET'])
 def send_request():
