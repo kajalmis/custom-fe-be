@@ -44,7 +44,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
             sudo su
-            # docker stop $(docker ps -q)
+            docker stop $(docker ps -q)
             # docker container prune -f
             # docker image prune -a --force
             # sudo su
