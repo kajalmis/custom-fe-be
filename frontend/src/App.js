@@ -25,7 +25,7 @@ function App() {
 
   return (
     <div className="container">
-      <h1 className="heading">kajal to kajal</h1>
+      <h1 className="heading">kajal to kajal mishra</h1>
       <div className="content">
         <p className="info">You are viewing the frontend.</p>
         <button className="button" onClick={handleClick} disabled={loading}>
