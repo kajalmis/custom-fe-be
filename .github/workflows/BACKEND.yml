@@ -23,18 +23,18 @@ jobs:
           aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID_ECR }}
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY_ECR }}
           aws configure set default.region us-east-1
-          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 332931378908.dkr.ecr.us-east-1.amazonaws.com
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 381492063930.dkr.ecr.us-east-1.amazonaws.com
           
       - name: Build Docker image
         run: |
           cd backend
-          docker build -t backend-kajal .
+          docker build -t kajal .
           
       - name: Tag Docker image
-        run: docker tag backend-kajal:latest 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:${{ github.sha }}
+        run: docker tag kajal:latest 381492063930.dkr.ecr.us-east-1.amazonaws.com/kajal:${{ github.sha }}
            
       - name: Push Docker image to Amazon ECR
-        run: docker push 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:${{ github.sha }}
+        run: docker push 381492063930.dkr.ecr.us-east-1.amazonaws.com/kajal:${{ github.sha }}
           
       - name: SSH into EC2 instance and update Docker image
         uses: appleboy/ssh-action@master
@@ -46,6 +46,6 @@ jobs:
             sudo docker stop $(docker ps -q)
             sudo docker container prune -f
             docker image prune -a --force
-            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 332931378908.dkr.ecr.us-east-1.amazonaws.com
-            docker pull 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:${{ github.sha }}
-            docker run -d -p 5000:5000 332931378908.dkr.ecr.us-east-1.amazonaws.com/kajal-mishra-niraj:${{ github.sha }}
+            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 381492063930.dkr.ecr.us-east-1.amazonaws.com
+            docker push 381492063930.dkr.ecr.us-east-1.amazonaws.com/kajal:${{ github.sha }}
+            docker run -d -p 5000:5000 381492063930.dkr.ecr.us-east-1.amazonaws.com/kajal:${{ github.sha }}
